@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SkillForge AI Chat</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+    <h1>SkillForge AI Tutor</h1>
+</header>
+
+<!-- Back Button -->
+<div style="text-align: right; margin: 10px 20px 0 0;">
+    <a href="/" class="button small">Back to Home</a>
+</div>
+
+<div class="container">
+
+    <div class="topic-select">
+        <label for="topic"><strong>What type of help do you want?</strong></label><br>
+        <select id="topic">
+            <option value="">💬 Free Ask</option>
+            <option value="quiz">📋 Quiz</option>
+            <option value="lesson">📚 Lesson Plan</option>
+            <option value="explain">🔍 Explanation</option>
+        </select>
+    </div>
+
+    <div id="chatBox" class="chat-box"></div>
+
+    <div class="input-area">
+        <textarea id="message" placeholder="Ask your question..." rows="3"></textarea><br>
+        <button onclick="askAI()" class="button">Ask</button>
+    </div>
+
+</div>
+
+<script>
+    const chatBox = document.getElementById("chatBox");
+
+    function appendMessage(role, text) {
+        const div = document.createElement("div");
+        div.className = `chat-message ${role}`;
+        div.innerHTML = `<strong>${role === "user" ? "🧑 You" : "🤖 AI"}:</strong><br>${text.replace(/\n/g, "<br>")}`;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function askAI() {
+        const input = document.getElementById("message").value.trim();
+        const topic = document.getElementById("topic").value;
+
+        if (!input) return;
+
+        appendMessage("user", input);
+        document.getElementById("message").value = "";
+        appendMessage("ai", "Thinking...");
+
+        const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: input, topic: topic })
+        });
+
+        const data = await res.json();
+        chatBox.lastChild.innerHTML = `<strong>🤖 AI:</strong><br>${(data.response || "No response").replace(/\n/g, "<br>")}`;
+    }
+</script>
+</body>
+</html>
